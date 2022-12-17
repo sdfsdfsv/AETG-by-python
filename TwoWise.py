@@ -20,32 +20,38 @@ class TwoWise:
 
         my_list = self.Two_wise_list
         n = len(my_list)
-
         for i in range(n - 1):
             for j in range(i + 1, n):
                 for a in my_list[i]:
                     for b in my_list[j]:
-                        self.Two_wise_dict[(a, b)] = 0
+                        self.Two_wise_dict[((i,a),(j,b))] = 0
+                        #防止相同值导致漏算，所以得带上索引
+        print("there are",len(self.Two_wise_dict),"pairs in total")
 
 
     def choose_case(self):
         result = []
-        for i in range(self.colnums):
+        covers=0
+        for i,a in enumerate(self.Two_wise_list):
     		# 每次从一个factor的所有order中选一个
-            result.append(self.find_max(self.Two_wise_list[i], result))
+            result.append(self.find_max(i,a, result))
             #每次向当前测试记录加入一个order就更新字典
-            for i in range(len(result) - 1):
-                if self.Two_wise_dict.get((result[i], result[-1]))==0:
-                    self.Two_wise_dict[(result[i], result[-1])] = 1
-                if self.Two_wise_dict.get((result[-1], result[i]))==0:
-                    self.Two_wise_dict[(result[-1], result[i])] = 1
 
-        return result
+            for ii in range(len(result) - 1):
+                if self.Two_wise_dict.get(((ii,result[ii]), (i,result[-1])))==0:
+                    covers+=1
+                    self.Two_wise_dict[((ii,result[ii]), (i,result[-1]))] = 1
+                if self.Two_wise_dict.get(((i,result[-1]), (ii,result[ii])))==0:
+                    covers+=1
+                    self.Two_wise_dict[((i,result[-1]), (ii,result[ii]))] = 1
+        if covers!=0:
+            return result+[covers]
+        else:
+            return None
 
 
 
-
-    def find_max(self, candi_list, result):
+    def find_max(self, i,candi_list, result):
         # Max_index = 0
         count_disappear = [0]*len(candi_list)
         # Max_disappear = 0
@@ -68,12 +74,12 @@ class TwoWise:
 
         # 如果之前的测试都有了，就随机选
 
-        for i, can in enumerate(candi_list):
-            for res in result:
-                for a in itertools.permutations([can, res]):
+        for ii, can in enumerate(candi_list):
+            for j,res in enumerate(result):
+                for a in itertools.permutations([(i,can), (j,res)]):
                     #根据二元组是否出现判断一个order的不频繁程度
                     if  self.Two_wise_dict.get(a) ==0:
-                        count_disappear[i] += 1
+                        count_disappear[ii] += 1
                         break
 
         #有没有纳入测试的二元组，就选拥有处于最低出现率的元素
@@ -98,7 +104,10 @@ class TwoWise:
 
             if 0 not in self.Two_wise_dict.values(): break
             
-            df.loc[count] = self.choose_case()
-            count = count + 1
+            a=self.choose_case()
+            if a is not None:
+                df.loc[count] = a
+                count = count + 1
+            print(count)
 
         df.to_excel(self.filename.strip('.xlsx')+'_two_wise_result.xlsx')
