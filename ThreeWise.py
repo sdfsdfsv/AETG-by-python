@@ -3,121 +3,112 @@ import random
 import numpy as np
 import Excel
 import itertools
+from collections import defaultdict
 
 class ThreeWise:
 
     def __init__(self,filename,colnums):
         self.filename=filename
         self.colnums=colnums
+        self.Three_wise_list = []
+        self.Three_wise_dict = {}
 
-    def create_dict(self,my_list):
+    def create_dict(self):
 
-        Three_wise_dict = {}
+        my_list = self.Three_wise_list
         n=len(my_list)
-        for index1 in range(n - 2):
-            for index2 in range(index1 + 1, n - 1):
-                for index3 in range(index2 + 1, n):
-                    for l4 in enumerate(my_list[index1]):
-                        for l5 in enumerate(my_list[index2]):
-                            for l6 in enumerate(my_list[index3]):
-                                Three_wise_dict[(l4, l5, l6)] = 0
+
+        for i in range(n - 2):
+            for j in range(i + 1, n - 1):
+                for k in range(j + 1, n):
+                    for a in my_list[i]:
+                        for b in my_list[j]:
+                            for c in my_list[k]:
+                                self.Three_wise_dict[(a, b, c)] = 0
             
 
-        return Three_wise_dict
-
-
-    def choose_case(self,list, dict, number):
+    def choose_case(self):
         result = []
-        for index in range(number):
-            result.append(self.find_max(list[index], dict, result))
+
+        #找一个result
+        for i in range(self.colnums):
+            result.append(self.find_max(self.Three_wise_list[i],result))
+
+            #根据result里面是three_wise对更新
+            #每次向当前测试记录加入一个order就更新字典
+            for i in range(len(result) - 2):
+                for j in range(i + 1, len(result) - 1):
+                    for tuple in itertools.permutations([result[i], result[j], result[-1]]):
+                        if self.Three_wise_dict.get(tuple)==0:
+                            self.Three_wise_dict[tuple] = 1
+
         return result
 
 
-    def find_max(self,candi_list, dict, result):
-        Max_index = 0
-        count_disappear = []
-        Max_disappear = 0
-        disappearance = {}
+    def find_max(self,candi_list, result):
+        # Max_index = 0
+        count_disappear = [0]*len(candi_list)
+        # Max_disappear = 0
+        # disappearance = defaultdict(int)
 
-        for key in dict.keys():
-            if dict[key] == 0:
-                if (key[0], key[1]) in disappearance:
-                    disappearance[(key[0], key[1])] += 1
-                else:
-                    disappearance[(key[0], key[1])] = 1
+        # for key in self.Three_wise_dict.keys():
+        #     if self.Three_wise_dict[key] == 0:
+        #         disappearance[(key[0], key[1])] += 1
+        #         disappearance[(key[0], key[2])] += 1
+        #         disappearance[(key[2], key[1])] += 1
 
-                if (key[0], key[2]) in disappearance:
-                    disappearance[(key[0], key[2])] += 1
-                else:
-                    disappearance[(key[0], key[2])] = 1
+        # fl=False
+        # for i,can in enumerate(candi_list):
+        #     for res in result:
+        #         if disappearance.get((can, res)):
+        #             fl=True
+        #             if disappearance[(can, res)] > Max_disappear:
+        #                 Max_disappear = disappearance[(can, res)]
+        #                 Max_index = i
+        #         if disappearance.get((res, can)):
+        #             fl=True
+        #             if disappearance[(res, can)] > Max_disappear:
+        #                 Max_disappear = disappearance[(res, can)]
+        #                 Max_index = i
 
-                if (key[2], key[1]) in disappearance:
-                    disappearance[(key[2], key[1])] += 1
-                else:
-                    disappearance[(key[2], key[1])] = 1
-        flag = 0
-        for can in candi_list:
-            for res in result:
-                if disappearance.get((can, res)):
-                    flag = 1
-                    if disappearance[(can, res)] > Max_disappear:
-                        Max_disappear = disappearance[(can, res)]
-                        Max_index = index
-                if disappearance.get((res, can)):
-                    flag = 1
-                    if disappearance[(res, can)] > Max_disappear:
-                        Max_disappear = disappearance[(res, can)]
-                        Max_index = index
-        if flag == 0:
-            return random.choice(candi_list)
-
-        for index in range(len(candi_list)):
-            count_disappear.append(0)
-
-
-        for index1 in range(len(candi_list)):
-            for index2 in range(len(result) - 1):
-                for index3 in range(index2 + 1, len(result)):
-                    tuples=itertools.permutations([candi_list[index1], result[index2], result[index3]])
-                    for tuple in tuples:
-                        if dict.get(tuple)==0:
-                            count_disappear[index1] += 1
+        # if fl==False:
+        #     return random.choice(candi_list)
+            
+        #根据还未出现的全排列数量计算最需要的Candidate
+        for i,can in enumerate(candi_list):
+            for j in range(len(result) - 1):
+                for k in range(j + 1, len(result)):
+                    for a in itertools.permutations([can, result[j], result[k]]):
+                        #根据三元组是否出现判断一个order的不频繁程度
+                        if self.Three_wise_dict.get(a)==0:
+                            count_disappear[i] += 1
                             break
 
-        arr = np.array(count_disappear)
-        if (arr == 0).all():
-            return candi_list[Max_index]
+
+        #有没有纳入测试的三元组，就选拥有处于最低出现率的元素
+        if sum(count_disappear)!=0:
+            return candi_list[count_disappear.index(max(count_disappear))]
         else:
-            Max_index = count_disappear.index(max(count_disappear))
-        return candi_list[Max_index]
+            return random.choice(candi_list)
+
+
+
 
 
 
     def three_wise(self):
 
         df = pd.DataFrame(columns=Excel.get_factor(self.filename))
-        Three_wise_list=Excel.excel_to_list(self.filename,self.colnums)
-        Three_wise_dict = self.create_dict(Three_wise_list)
+        self.Three_wise_list=Excel.excel_to_list(self.filename,self.colnums)
+        self.create_dict()
+
         count = 1
-
         while 1:
-            if 0 not in Three_wise_dict.values():   break
-            count_pairs = 0
-            testcase = self.choose_case(Three_wise_list, Three_wise_dict, self.colnums)
+            if 0 not in self.Three_wise_dict.values():   break
 
-            for i in range(len(testcase) - 2):
-                for j in range(i + 1, len(testcase) - 1):
-                    for k in range(j + 1, len(testcase)):
-                        tuples=itertools.permutations([testcase[i], testcase[j], testcase[k]])
-                        for tuple in tuples:
-                            if Three_wise_dict.get(tuple) == 0:
-                                Three_wise_dict[tuple] = 1
-                                count_pairs += 1
-            # if count_pairs == 0:
-            #     continue
-            testcase.append(count_pairs)
 
-            df.loc[count] = testcase
+            df.loc[count] = self.choose_case()
             count = count + 1
-
+            if count%10==0:
+                print(count)
         df.to_excel(self.filename.strip('.xlsx')+'_three_wise_result.xlsx')

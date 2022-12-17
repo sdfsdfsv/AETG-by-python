@@ -57,7 +57,8 @@ def excel_to_list(filename, number):
 
 
 def get_factor(filename):
-    return pd.read_excel(filename).keys().values.tolist()
+    # print(pd.read_excel(filename).keys().values.tolist()[1::])
+    return pd.read_excel(filename).keys().values.tolist()[1::]
 
 
 
