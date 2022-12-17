@@ -2,7 +2,7 @@ import pandas as pd #the pandas
 import random
 import numpy as np
 import Excel
-
+import itertools
 
 class ThreeWise:
 
@@ -41,15 +41,17 @@ class ThreeWise:
 
         for key in dict.keys():
             if dict[key] == 0:
-                if disappearance.get((key[0], key[1])):
+                if (key[0], key[1]) in disappearance:
                     disappearance[(key[0], key[1])] += 1
                 else:
                     disappearance[(key[0], key[1])] = 1
-                if disappearance.get((key[0], key[2])):
+
+                if (key[0], key[2]) in disappearance:
                     disappearance[(key[0], key[2])] += 1
                 else:
                     disappearance[(key[0], key[2])] = 1
-                if disappearance.get((key[2], key[1])):
+
+                if (key[2], key[1]) in disappearance:
                     disappearance[(key[2], key[1])] += 1
                 else:
                     disappearance[(key[2], key[1])] = 1
@@ -76,29 +78,12 @@ class ThreeWise:
         for index1 in range(len(candi_list)):
             for index2 in range(len(result) - 1):
                 for index3 in range(index2 + 1, len(result)):
-                    tuple1 = (candi_list[index1], result[index2], result[index3])
-                    tuple2 = (candi_list[index1], result[index3], result[index2])
-                    tuple3 = (result[index3], candi_list[index1], result[index2])
-                    tuple4 = (result[index3], result[index2], candi_list[index1])
-                    tuple5 = (result[index2], candi_list[index1], result[index3])
-                    tuple6 = (result[index2], result[index3], candi_list[index1])
-                    if dict.get(tuple1) == 0:
-                        count_disappear[index1] += 1
-                        continue
-                    if dict.get(tuple2) == 0:
-                        count_disappear[index1] += 1
-                        continue
-                    if dict.get(tuple3) == 0:
-                        count_disappear[index1] += 1
-                        continue
-                    if dict.get(tuple4) == 0:
-                        count_disappear[index1] += 1
-                        continue
-                    if dict.get(tuple5) == 0:
-                        count_disappear[index1] += 1
-                        continue
-                    if dict.get(tuple6) == 0:
-                        count_disappear[index1] += 1
+                    tuples=itertools.permutations([candi_list[index1], result[index2], result[index3]])
+                    for tuple in tuples:
+                        if dict.get(tuple)==0:
+                            count_disappear[index1] += 1
+                            break
+
         arr = np.array(count_disappear)
         if (arr == 0).all():
             return candi_list[Max_index]
@@ -110,50 +95,29 @@ class ThreeWise:
 
     def three_wise(self):
 
-        Three_wise_list=Excel.excel_to_list(self.filename,self.colnums)
-
         df = pd.DataFrame(columns=Excel.get_factor(self.filename))
-
+        Three_wise_list=Excel.excel_to_list(self.filename,self.colnums)
         Three_wise_dict = self.create_dict(Three_wise_list)
         count = 1
-        Keys = list(Three_wise_dict.keys())
-        print(123)
+
         while 1:
-            if 0 not in Three_wise_dict.values(): break
+            if 0 not in Three_wise_dict.values():   break
             count_pairs = 0
             testcase = self.choose_case(Three_wise_list, Three_wise_dict, self.colnums)
 
             for i in range(len(testcase) - 2):
                 for j in range(i + 1, len(testcase) - 1):
                     for k in range(j + 1, len(testcase)):
-                        new_tuple1 = (testcase[i], testcase[j], testcase[k])
-                        new_tuple2 = (testcase[i], testcase[k], testcase[j])
-                        new_tuple3 = (testcase[j], testcase[k], testcase[i])
-                        new_tuple4 = (testcase[j], testcase[i], testcase[k])
-                        new_tuple5 = (testcase[k], testcase[j], testcase[i])
-                        new_tuple6 = (testcase[k], testcase[i], testcase[j])
-                        if Three_wise_dict.get(new_tuple1) == 0:
-                            Three_wise_dict[new_tuple1] = 1
-                            count_pairs += 1
-                        if Three_wise_dict.get(new_tuple2) == 0:
-                            Three_wise_dict[new_tuple2] = 1
-                            count_pairs += 1
-                        if Three_wise_dict.get(new_tuple3) == 0:
-                            Three_wise_dict[new_tuple3] = 1
-                            count_pairs += 1
-                        if Three_wise_dict.get(new_tuple4) == 0:
-                            Three_wise_dict[new_tuple4] = 1
-                            count_pairs += 1
-                        if Three_wise_dict.get(new_tuple5) == 0:
-                            Three_wise_dict[new_tuple5] = 1
-                            count_pairs += 1
-                        if Three_wise_dict.get(new_tuple6) == 0:
-                            Three_wise_dict[new_tuple6] = 1
-                            count_pairs += 1
-            if count_pairs == 0:
-                continue
+                        tuples=itertools.permutations([testcase[i], testcase[j], testcase[k]])
+                        for tuple in tuples:
+                            if Three_wise_dict.get(tuple) == 0:
+                                Three_wise_dict[tuple] = 1
+                                count_pairs += 1
+            # if count_pairs == 0:
+            #     continue
             testcase.append(count_pairs)
 
             df.loc[count] = testcase
             count = count + 1
+
         df.to_excel(self.filename.strip('.xlsx')+'_three_wise_result.xlsx')

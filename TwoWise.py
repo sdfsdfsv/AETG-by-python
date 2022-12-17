@@ -2,7 +2,7 @@ import pandas as pd #the pandas
 import random
 import numpy as np
 import Excel
-
+import itertools
 
 class TwoWise:
 
@@ -68,17 +68,13 @@ class TwoWise:
 
 	    for index1 in range(len(candi_list)):
 	        for index2 in range(len(result)):
-	            tuple1 = (candi_list[index1], result[index2])
-	            tuple2 = (result[index2], candi_list[index1])
-	            if dict.get(tuple1) == 0:
-	                count_disappear[index1] += 1
-	                continue
-	            if dict.get(tuple2) == 0:
-	                count_disappear[index1] += 1
+	        	tuples=itertools.permutations([candi_list[index1], result[index2]])
+	        	for tuple in tuples:
+	        		if dict.get(tuple)==0:
+	        			count_disappear[index1] += 1
+	        			break
 
-	    arr = np.array(count_disappear)
-
-	    if (arr == 0).all():
+	    if count_disappear.count(0) == len(count_disappear):
 	        return candi_list[Max_index]
 	    else:
 	        Max_index = count_disappear.index(max(count_disappear))
@@ -90,14 +86,12 @@ class TwoWise:
 
 	def two_wise(self):
 
-		Two_wise_list=Excel.excel_to_list(self.filename,self.colnums)
+
 
 		df = pd.DataFrame(columns=Excel.get_factor(self.filename))
-
+		Two_wise_list=Excel.excel_to_list(self.filename,self.colnums)
 		Two_wise_dict = self.create_dict(Two_wise_list)
 		count = 1
-		Keys = list(Two_wise_dict.keys())
-
 		while 1:
 		    if 0 not in Two_wise_dict.values(): break
 		    count_pairs = 0
