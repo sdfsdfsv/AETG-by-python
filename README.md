@@ -32,16 +32,20 @@ Finally, we continue till the ucps is empty.
 
 ![image](https://user-images.githubusercontent.com/82871660/208232909-59d7813a-4c3a-462e-a065-9f716bbc640c.png)
 ### the calculations 
-the strength of the model is 2, so the problem can be describe as CA(534;18,2,(16,4,2,5,20,15,4,5,5,14,8,8,7,18,14,5,47,5), the sum of pairs should be 17335.
+the strength of the model is 2, so the problem can be describe as CA(N;18,2,(16,4,2,5,20,15,4,5,5,14,8,8,7,18,14,5,47,5), the sum of pairs should be 18330.
 
-there are 534 test cases generated in total, the sum of pairs in total is 17335, which is equal to our assumption. 
+there are 1163 test cases generated in total, the sum of pairs in total is 18330, which is equal to our assumption. 
+![image](https://user-images.githubusercontent.com/82871660/208243649-b1ffcaee-10af-478c-9752-271dccd408ed.png)
 
 ## the model of XC.com with strength 3
 
 ![image](https://user-images.githubusercontent.com/82871660/208233091-b3433936-2004-405b-b1c0-09a6f32ff39a.png)
 ### the calculations
-the strength of the model is 3, so the problem can be describe as CA(503;7,3,(71,71,71,71,9,6,5), the sum of pairs should be 16201.
-there are 503 test cases generated in total, the sum of pairs in total is 1851, which is equal to our assumption. 
+
+the strength of the model is 3, so the problem can be describe as CA(503;7,3,(40,40,15,20,9,6,5), the sum of pairs should be 202063.
+there are 32700 test cases generated in total, the sum of pairs in total is 202063, which is equal to our assumption. 
+the running time is a bit long, please be patient.
+![image](https://user-images.githubusercontent.com/82871660/208243699-65b6e249-cf67-4455-91e6-a4a80f697a1e.png)
 
 ### some adjustments
 replace the return date with duration days 
